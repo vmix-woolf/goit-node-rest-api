@@ -6,7 +6,7 @@ import { fileURLToPath } from "url";
 // Отримуємо абсолютний шлях до contacts.json
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-const contactsPath = path.join(__dirname, "../contacts.json");
+const contactsPath = path.join(__dirname, "../db/contacts.json");
 
 // Зчитуємо всі контакти з файлу
 async function listContacts() {
