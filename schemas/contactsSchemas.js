@@ -13,3 +13,8 @@ export const updateContactSchema = Joi.object({
     email: Joi.string().email(),
     phone: Joi.string().min(1),
 }).min(1);
+
+// Схема для оновлення статусу favorite (PATCH)
+export const updateFavoriteSchema = Joi.object({
+    favorite: Joi.boolean().required(),
+});

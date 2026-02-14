@@ -39,10 +39,23 @@ async function updateContact(contactId, data) {
     return contact;
 }
 
+// Оновлюємо статус favorite
+async function updateStatusContact(contactId, body) {
+    const contact = await Contact.findByPk(contactId);
+
+    if (!contact) {
+        return null;
+    }
+
+    await contact.update(body);
+    return contact;
+}
+
 export default {
     listContacts,
     getContactById,
     addContact,
     removeContact,
     updateContact,
+    updateStatusContact,
 };

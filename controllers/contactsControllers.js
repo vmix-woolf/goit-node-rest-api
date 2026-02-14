@@ -1,4 +1,6 @@
 import contactsService from "../services/contactsServices.js";
+import { updateFavoriteSchema } from "../schemas/contactsSchemas.js";
+
 import {
     createContactSchema,
     updateContactSchema,
@@ -71,11 +73,35 @@ export const updateContact = async (req, res) => {
     res.status(200).json(updatedContact);
 };
 
+// Оновлюємо статус favorite
+export const updateFavorite = async (req, res) => {
+    const { contactId } = req.params;
+
+    const { error } = updateFavoriteSchema.validate(req.body);
+
+    if (error) {
+        return res.status(400).json({ message: error.message });
+    }
+
+    const updatedContact = await contactsService.updateStatusContact(
+        contactId,
+        req.body
+    );
+
+    if (!updatedContact) {
+        return res.status(404).json({ message: "Not found" });
+    }
+
+    res.status(200).json(updatedContact);
+};
+
+
 export default {
     getAllContacts,
     getContactById,
     addContact,
     removeContact,
     updateContact,
+    updateFavorite,
 };
 
