@@ -1,4 +1,5 @@
 import express from "express";
+import { authMiddleware } from "../../middlewares/authMiddleware.js";
 import {
     getAllContacts,
     getContactById,
@@ -10,7 +11,7 @@ import {
 
 const router = express.Router();
 
-router.get("/", getAllContacts);
+router.get("/", authMiddleware, getAllContacts);
 router.get("/:id", getContactById);
 router.post("/", addContact);
 router.delete("/:id", removeContact);
