@@ -3,6 +3,7 @@ import User from "../models/user.js";
 import { registerSchema } from "../schemas/authSchemas.js";
 import jwt from "jsonwebtoken";
 import { loginSchema } from "../schemas/authSchemas.js";
+import { updateSubscriptionSchema } from "../schemas/authSchemas.js";
 
 // Реєстрація користувача
 export const register = async (req, res) => {
@@ -96,5 +97,27 @@ export const getCurrent = async (req, res) => {
     return res.status(200).json({
         email,
         subscription,
+    });
+};
+
+// Оновлення subscription користувача
+export const updateSubscription = async (req, res) => {
+    const { error } = updateSubscriptionSchema.validate(req.body);
+
+    if (error) {
+        return res.status(400).json({ message: error.message });
+    }
+
+    const user = await User.findByPk(req.user.id);
+
+    if (!user) {
+        return res.status(401).json({ message: "Not authorized" });
+    }
+
+    await user.update({ subscription: req.body.subscription });
+
+    res.status(200).json({
+        email: user.email,
+        subscription: user.subscription,
     });
 };

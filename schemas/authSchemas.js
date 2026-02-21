@@ -11,3 +11,10 @@ export const loginSchema = Joi.object({
     email: Joi.string().email().required(),
     password: Joi.string().required(),
 });
+
+// Схема для оновлення subscription користувача
+export const updateSubscriptionSchema = Joi.object({
+    subscription: Joi.string()
+        .valid("starter", "pro", "business")
+        .required(),
+});
