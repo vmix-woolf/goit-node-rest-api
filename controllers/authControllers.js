@@ -88,3 +88,13 @@ export const logout = async (req, res) => {
 
     res.status(204).send();
 };
+
+// Отримання поточного користувача
+export const getCurrent = async (req, res) => {
+    const { email, subscription } = req.user;
+
+    return res.status(200).json({
+        email,
+        subscription,
+    });
+};
