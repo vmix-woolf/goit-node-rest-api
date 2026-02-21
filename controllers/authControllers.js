@@ -75,3 +75,16 @@ export const login = async (req, res) => {
         },
     });
 };
+
+// Логаут користувача
+export const logout = async (req, res) => {
+    const user = req.user;
+
+    if (!user) {
+        return res.status(401).json({ message: "Not authorized" });
+    }
+
+    await user.update({ token: null });
+
+    res.status(204).send();
+};
