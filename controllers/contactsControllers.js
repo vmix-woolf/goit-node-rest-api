@@ -8,8 +8,16 @@ import {
 
 // Отримуємо всі контакти
 export const getAllContacts = async (req, res) => {
-    const contacts = await contactsService.listContacts(req.user.id);
-    res.status(200).json(contacts);
+    const { page = 1, limit = 20, favorite } = req.query;
+
+    const contacts = await contactsService.listContacts(
+        req.user.id,
+        { page, limit, favorite }
+    );
+
+    console.log("REQ QUERY:", req.query);
+
+    return res.status(200).json(contacts);
 };
 
 // Отримуємо контакт за id

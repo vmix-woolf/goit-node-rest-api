@@ -1,9 +1,21 @@
 import Contact from "../models/contact.js";
 
-// Отримуємо всі контакти
-async function listContacts(ownerId) {
-    return await Contact.findAll({
-        where: { owner: ownerId },
+// Отримуємо всі контакти з пагінацією та фільтрацією
+async function listContacts(ownerId, query = {}) {
+    const { page = 1, limit = 20, favorite } = query;
+
+    const offset = (Number(page) - 1) * Number(limit);
+
+    const where = { owner: ownerId };
+
+    if (favorite !== undefined) {
+        where.favorite = String(favorite) === "true";
+    }
+
+    return Contact.findAll({
+        where,
+        limit: Number(limit),
+        offset,
     });
 }
 
