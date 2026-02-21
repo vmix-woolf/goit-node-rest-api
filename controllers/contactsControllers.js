@@ -8,14 +8,14 @@ import {
 
 // Отримуємо всі контакти
 export const getAllContacts = async (req, res) => {
-    const contacts = await contactsService.listContacts();
+    const contacts = await contactsService.listContacts(req.user.id);
     res.status(200).json(contacts);
 };
 
 // Отримуємо контакт за id
 export const getContactById = async (req, res) => {
     const { id } = req.params;
-    const contact = await contactsService.getContactById(id);
+    const contact = await contactsService.getContactById(id, req.user.id);
 
     if (!contact) {
         return res.status(404).json({ message: "Not found" });
@@ -32,14 +32,18 @@ export const addContact = async (req, res) => {
         return res.status(400).json({ message: error.message });
     }
 
-    const newContact = await contactsService.addContact(req.body);
-    res.status(201).json(newContact);
+    const newContact = await contactsService.addContact({
+        ...req.body,
+        owner: req.user.id,
+    });
+
+    return res.status(201).json(newContact);
 };
 
 // Видаляємо контакт за id
 export const removeContact = async (req, res) => {
     const { id } = req.params;
-    const removedContact = await contactsService.removeContact(id);
+    const removedContact = await contactsService.removeContact(id, req.user.id);
 
     if (!removedContact) {
         return res.status(404).json({ message: "Not found" });
@@ -52,7 +56,7 @@ export const removeContact = async (req, res) => {
 export const updateContact = async (req, res) => {
     const { id } = req.params;
 
-    if (Object.keys(req.body).length === 0) {
+    if (!Object.keys(req.body).length) {
         return res
             .status(400)
             .json({ message: "Body must have at least one field" });
@@ -64,13 +68,17 @@ export const updateContact = async (req, res) => {
         return res.status(400).json({ message: error.message });
     }
 
-    const updatedContact = await contactsService.updateContact(id, req.body);
+    const updatedContact = await contactsService.updateContact(
+        id,
+        req.user.id,
+        req.body
+    );
 
     if (!updatedContact) {
         return res.status(404).json({ message: "Not found" });
     }
 
-    res.status(200).json(updatedContact);
+    return res.status(200).json(updatedContact);
 };
 
 // Оновлюємо статус favorite
@@ -85,6 +93,7 @@ export const updateFavorite = async (req, res) => {
 
     const updatedContact = await contactsService.updateStatusContact(
         contactId,
+        req.user.id,
         req.body
     );
 

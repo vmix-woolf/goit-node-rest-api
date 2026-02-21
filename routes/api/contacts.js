@@ -12,11 +12,10 @@ import {
 const router = express.Router();
 
 router.get("/", authMiddleware, getAllContacts);
-router.get("/:id", getContactById);
-router.post("/", addContact);
-router.delete("/:id", removeContact);
-router.put("/:id", updateContact);
-router.patch("/:contactId/favorite", updateFavorite);
-
+router.get("/:id", authMiddleware, getContactById);
+router.post("/", authMiddleware, addContact);
+router.delete("/:id", authMiddleware, removeContact);
+router.put("/:id", authMiddleware, updateContact);
+router.patch("/:contactId/favorite", authMiddleware, updateFavorite);
 
 export default router;
