@@ -3,6 +3,7 @@ import morgan from "morgan";
 import cors from "cors";
 import { connectDB } from "./config/db.js";
 import authRouter from "./routes/api/auth.js";
+import path from "path";
 
 import contactsRouter from "./routes/api/contacts.js";
 
@@ -11,6 +12,9 @@ const app = express();
 app.use(morgan("tiny"));
 app.use(cors());
 app.use(express.json());
+
+// Роздача статичних файлів
+app.use(express.static(path.join(process.cwd(), "public")));
 
 app.use("/api/auth", authRouter);
 app.use("/api/contacts", contactsRouter);
