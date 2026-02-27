@@ -4,6 +4,7 @@ import { registerSchema } from "../schemas/authSchemas.js";
 import jwt from "jsonwebtoken";
 import { loginSchema } from "../schemas/authSchemas.js";
 import { updateSubscriptionSchema } from "../schemas/authSchemas.js";
+import gravatar from "gravatar";
 
 // Реєстрація користувача
 export const register = async (req, res) => {
@@ -21,17 +22,22 @@ export const register = async (req, res) => {
         return res.status(409).json({ message: "Email in use" });
     }
 
+    // Генерація аватарки через gravatar
+    const avatarURL = gravatar.url(email, { s: "250", d: "identicon" }, true);
+
     const hashedPassword = await bcrypt.hash(password, 10);
 
     const newUser = await User.create({
-        email,
+        email: email,
         password: hashedPassword,
+        avatarURL: avatarURL,
     });
 
     res.status(201).json({
         user: {
             email: newUser.email,
             subscription: newUser.subscription,
+            avatarURL: newUser.avatarURL,
         },
     });
 };
