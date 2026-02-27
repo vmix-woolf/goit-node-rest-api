@@ -1,10 +1,16 @@
 import bcrypt from "bcryptjs";
-import User from "../models/user.js";
-import { registerSchema } from "../schemas/authSchemas.js";
 import jwt from "jsonwebtoken";
-import { loginSchema } from "../schemas/authSchemas.js";
-import { updateSubscriptionSchema } from "../schemas/authSchemas.js";
 import gravatar from "gravatar";
+import fs from "fs/promises";
+import path from "path";
+
+import User from "../models/user.js";
+import {
+    registerSchema,
+    loginSchema,
+    updateSubscriptionSchema,
+} from "../schemas/authSchemas.js";
+import { avatarsDir } from "../utils/paths.js";
 
 // Реєстрація користувача
 export const register = async (req, res) => {
@@ -28,9 +34,9 @@ export const register = async (req, res) => {
     const hashedPassword = await bcrypt.hash(password, 10);
 
     const newUser = await User.create({
-        email: email,
+        email,
         password: hashedPassword,
-        avatarURL: avatarURL,
+        avatarURL,
     });
 
     res.status(201).json({
@@ -64,9 +70,7 @@ export const login = async (req, res) => {
         return res.status(401).json({ message: "Email or password is wrong" });
     }
 
-    const payload = {
-        id: user.id,
-    };
+    const payload = { id: user.id };
 
     const token = jwt.sign(payload, process.env.JWT_SECRET, {
         expiresIn: "1h",
@@ -126,4 +130,44 @@ export const updateSubscription = async (req, res) => {
         email: user.email,
         subscription: user.subscription,
     });
+};
+
+// Оновлення аватарки користувача
+export const updateAvatar = async (req, res, next) => {
+    const tempPath = req.file?.path;
+
+    try {
+        if (!req.file) {
+            const error = new Error("Avatar file is required");
+            error.status = 400;
+            throw error;
+        }
+
+        const ownerId = req.user.id;
+        const ext = path.extname(req.file.originalname) || ".jpg";
+        const filename = `${ownerId}_${Date.now()}${ext}`;
+
+        // Створюємо папку, якщо її немає
+        await fs.mkdir(avatarsDir, { recursive: true });
+
+        const publicPath = path.join(avatarsDir, filename);
+
+        // Переносимо файл з temp у public/avatars
+        await fs.rename(tempPath, publicPath);
+
+        const avatarURL = `/avatars/${filename}`;
+
+        // Оновлюємо avatarURL у користувача
+        await req.user.update({ avatarURL });
+
+        res.status(200).json({ avatarURL });
+    } catch (err) {
+        // Якщо щось впало — прибираємо тимчасовий файл
+        if (tempPath) {
+            try {
+                await fs.unlink(tempPath);
+            } catch (_) {}
+        }
+        next(err);
+    }
 };

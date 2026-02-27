@@ -4,6 +4,7 @@ import cors from "cors";
 import { connectDB } from "./config/db.js";
 import authRouter from "./routes/api/auth.js";
 import path from "path";
+import { publicDir } from "./utils/paths.js";
 
 import contactsRouter from "./routes/api/contacts.js";
 
@@ -14,7 +15,7 @@ app.use(cors());
 app.use(express.json());
 
 // Роздача статичних файлів
-app.use(express.static(path.join(process.cwd(), "public")));
+app.use(express.static(publicDir));
 
 app.use("/api/auth", authRouter);
 app.use("/api/contacts", contactsRouter);
