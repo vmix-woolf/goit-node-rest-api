@@ -3,6 +3,8 @@ import jwt from "jsonwebtoken";
 import gravatar from "gravatar";
 import fs from "fs/promises";
 import path from "path";
+import { nanoid } from "nanoid";
+import { sendEmail } from "../services/emailService.js";
 
 import User from "../models/user.js";
 import {
@@ -32,11 +34,21 @@ export const register = async (req, res) => {
     const avatarURL = gravatar.url(email, { s: "250", d: "identicon" }, true);
 
     const hashedPassword = await bcrypt.hash(password, 10);
+    const verificationToken = nanoid();
 
     const newUser = await User.create({
         email,
         password: hashedPassword,
         avatarURL,
+        verificationToken,
+    });
+
+    const verifyLink = `${process.env.BASE_URL}/api/auth/verify/${verificationToken}`;
+
+    await sendEmail({
+        to: email,
+        subject: "Verify your email",
+        html: `<a href="${verifyLink}">Verify your email</a>`,
     });
 
     res.status(201).json({
