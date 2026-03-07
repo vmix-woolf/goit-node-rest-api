@@ -11,6 +11,7 @@ import {
     registerSchema,
     loginSchema,
     updateSubscriptionSchema,
+    resendVerifySchema,
 } from "../schemas/authSchemas.js";
 import { avatarsDir } from "../utils/paths.js";
 
@@ -79,7 +80,7 @@ export const login = async (req, res) => {
     if (!user.verify) {
         return res.status(401).json({ message: "Email not verified" });
     }
-    
+
     const isMatch = await bcrypt.compare(password, user.password);
 
     if (!isMatch) {
@@ -206,4 +207,37 @@ export const verifyEmail = async (req, res) => {
     });
 
     res.status(200).json({ message: "Verification successful" });
+};
+
+// Повторна відправка email для верифікації
+export const resendVerifyEmail = async (req, res) => {
+    const { error } = resendVerifySchema.validate(req.body);
+
+    if (error) {
+        return res.status(400).json({ message: "missing required field email" });
+    }
+
+    const { email } = req.body;
+
+    const user = await User.findOne({ where: { email } });
+
+    if (!user) {
+        return res.status(404).json({ message: "User not found" });
+    }
+
+    if (user.verify) {
+        return res
+            .status(400)
+            .json({ message: "Verification has already been passed" });
+    }
+
+    const verifyLink = `${process.env.BASE_URL}/api/auth/verify/${user.verificationToken}`;
+
+    await sendEmail({
+        to: email,
+        subject: "Verify your email",
+        html: `<a href="${verifyLink}">Verify your email</a>`,
+    });
+
+    res.status(200).json({ message: "Verification email sent" });
 };
